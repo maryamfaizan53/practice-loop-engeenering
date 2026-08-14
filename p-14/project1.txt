@@ -1,0 +1,43 @@
+Step-by-Step Guide
+
+Step 1 — Apne throwaway repo mein jao aur Claude Code kholo
+
+bash
+cd /path/to/your/throwaway-repo
+claude
+
+Step 2 — Ek "lamba task" banao jise watch karna hai
+
+Ek simple script banao jo thori der so kar (sleep) phir ek file likh de — yeh real-world "lamba task" ka simulation hai (jaise ek build ya deployment):
+
+bash
+(sleep 90 && echo "DONE: build finished at $(date)" > build-status.txt) &
+
+Yeh background mein 90 second baad build-status.txt file banayega.
+
+Step 3 — Claude Code se in-session loop banao
+
+Claude Code ke andar (yani claude chalane ke baad) yeh type karo:
+
+/loop check every minute whether build-status.txt exists. The moment
+it does, read it, tell me the build finished, and stop watching.
+
+Yeh /loop command in-session heartbeat hai — jab tak aapka terminal khula hai, yeh har minute check karega.
+
+Step 4 — Dekho kya hota hai
+
+Kuch nahi karo — Claude apna kaam karega. ~90 second baad jab file ban jaegi, Claude aapko batayega "build finished" aur watching band kar dega.
+
+Step 5 — Loop ko cleanly rokna seekho
+
+Agar aap khud rokna chahein, Claude Code mein Ctrl+C ya /loop stop (agar available ho) use karo.
+
+✅ Done Kab Hoga?
+Loop ne khud notice kiya ke task khatam hua
+Ek dafa bataya, dubara-dubara spam nahi kiya
+Aapne terminal ko ghoora nahi — kuch aur kaam karte rahe
+🧠 Zaroori Baat (Concept 4 ka core)
+
+Yeh in-session loop hai — matlab jese hi aap terminal band karo, watching mar jati hai. Yehi is heartbeat ka poora concept hai: koi standing memory nahi, koi background server nahi — sirf aapke session ke jeete-ji chalta hai.
+
+Try kar ke batao — kaam kiya? Jab ready ho, Project 2 (Make the tests pass, then stop) par chalte hain.

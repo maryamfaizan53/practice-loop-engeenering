@@ -1,0 +1,79 @@
+🎯 Project 2: Make the Tests Pass, Then Stop
+
+Concept: Conditional loop (/goal) + Maker-checker | Difficulty: Easy-Medium | Time: 30-45 min
+
+Idea: Aisa loop banao jo tab tak kaam karta rahe jab tak tests pass na ho jaein — lekin "done" ka faisla agent nahi, test runner kare. Yehi Concept 1 ka sabse zaroori sabak hai: model apne aap ko khud judge nahi kar sakta.
+
+Step-by-Step Guide
+
+Step 1 — Apne throwaway repo mein 2-3 chhoti failing tests banao
+
+Agar Python use kar rahe ho, ek simple example:
+
+bash
+mkdir -p src tests
+cat > src/calculator.py << 'EOF'
+def add(a, b):
+    pass  # bug: not implemented
+
+def multiply(a, b):
+    pass  # bug: not implemented
+EOF
+
+cat > tests/test_calculator.py << 'EOF'
+from src.calculator import add, multiply
+
+def test_add():
+    assert add(2, 3) == 5
+
+def test_multiply():
+    assert multiply(4, 5) == 20
+
+def test_add_negative():
+    assert add(-1, -1) == -2
+EOF
+
+Confirm karo yeh fail ho rahi hain:
+
+bash
+pytest tests/ -v
+
+Teeno tests fail honi chahiye — good, yehi shuru ka point hai.
+
+Step 2 — Claude Code kholo aur /goal command use karo
+
+bash
+claude
+
+Phir:
+
+/goal Make all tests in tests/ pass. Run `pytest tests/ -v` to check.
+Do not stop until the command shows all tests passing, or until
+you've tried 6 times — whichever comes first.
+
+Zaroori: Yahan "done" ka faisla pytest command karti hai — agent khud nahi keh raha "maine kar diya, trust karo." Command hi checker hai.
+
+Step 3 — Cap lagao (limit)
+
+Humne upar hi 6 tries ki limit di hai — yeh zaroori hai taake loop hamesha ke liye na chale agar kuch stuck ho jaye (Concept 13 ka safety rule).
+
+Step 4 — Dekho kya hota hai
+
+Claude khud calculator.py ko fix karega, test chalayega, dekhega pass hui ya nahi, aur agar fail ho to dubara try karega — jab tak pytest khud "PASSED" na bole.
+
+✅ Done Kab Hoga?
+Loop isliye ruka kyunki tests waqai pass ho gayin — cap tak pahunchne ki wajah se nahi
+Agar loop baar-baar cap tak pahunch raha hai, iska matlab hai aapka stop condition ya prompt weak hai — yehi is project ka sabaq hai!
+🧠 Zaroori Baat
+
+Yeh Concept 1 ke "small loop" wale masle ka seedha ilaj hai — yaad hai humne parha tha:
+
+python
+while True:
+    reply = model(context)
+    if not reply.tool_calls:
+        break   # model khud decide karta hai "done"
+
+/goal isko outside stop deta hai: ek checked condition (pytest ka result), na ke model ka apna opinion. Yehi farq hai ek agent ko "trust karna" aur ek agent ko "prove karwana" mein.
+
+Try karo aur batao result. Ready ho to Project 3 (Morning brief with memory — spine ka pehla real test) par chalte hain.

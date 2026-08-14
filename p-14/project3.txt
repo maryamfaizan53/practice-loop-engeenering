@@ -1,0 +1,87 @@
+🎯 Project 3: The Morning Brief with a Memory
+
+Concept: Scheduled heartbeat + The Spine | Difficulty: Medium | Time: 45-60 min
+
+Idea: Ek loop banao jo progress.md padhe, repo se kuch simple cheez collect kare, summary likhe, aur progress.md ko update kare. Phir dusri baar chalao aur dekho ke woh pehli baar ki cheezein dubara na kare — yehi prove karta hai ke aapki spine kaam kar rahi hai.
+
+Step-by-Step Guide
+
+Step 1 — progress.md file banao (khaali, shuruaat ke liye)
+
+bash
+cat > progress.md << 'EOF'
+# Progress Log
+
+(no entries yet)
+EOF
+
+Step 2 — Repo mein kuch TODO comments daalo (jo collect karne ke liye kuch ho)
+
+bash
+cat > notes.py << 'EOF'
+# TODO: add input validation to add()
+# TODO: write documentation for multiply()
+# TODO: handle division by zero
+EOF
+
+git add -A && git commit -m "setup for morning brief loop"
+
+Step 3 — Claude Code kholo aur pehla run karo
+
+bash
+claude
+
+Phir yeh prompt do:
+
+Read progress.md first. Then find all TODO comments in this repo.
+Write a short summary of what you found, and append it to
+progress.md with today's date. Only mention TODOs you have not
+already logged in progress.md before.
+
+Zaroori baat: "Read progress.md first" aur "only mention TODOs you have not already logged" — yeh dono lines hi spine ka mechanism hain. Bina inke, loop har baar zero se shuru hoga.
+
+Step 4 — Dekho progress.md mein kya likha gaya
+
+bash
+cat progress.md
+
+Ismein aaj ki date ke sath 3 TODOs ki summary honi chahiye.
+
+Step 5 — Ab ek nayi TODO add karo (real world mein "overnight change" ka simulation)
+
+bash
+echo "# TODO: add unit tests for calculator.py" >> notes.py
+git add -A && git commit -m "added new todo"
+
+Step 6 — Loop ko DOOSRI baar chalao
+
+Naya Claude Code session shuru karo (ya same session mein dubara prompt do):
+
+Read progress.md first. Then find all TODO comments in this repo.
+Write a short summary of what you found, and append it to
+progress.md with today's date. Only mention TODOs you have not
+already logged in progress.md before.
+✅ Done Kab Hoga?
+
+Check progress.md — doosri entry mein sirf nayi TODO (unit tests wali) mention honi chahiye, purani 3 dobara nahi. Agar doosra run pehle jaisa hi sab kuch dubara likh de, iska matlab spine kaam nahi kar rahi — Claude ne progress.md ko "hint" ki tarah nahi liya.
+
+bash
+cat progress.md
+
+Result kuch aisa dikhna chahiye:
+
+markdown
+# Progress Log
+
+## 2026-08-13
+Found 3 TODOs: input validation, multiply() docs, division by zero.
+
+## 2026-08-13 (later)
+Found 1 new TODO: unit tests for calculator.py. (Previous 3 already logged.)
+🧠 Zaroori Baat (Concept 6 aur 12 ka core)
+
+Yaad hai humne parha tha: "Model har run ke baad sab bhool jata hai. Spine na ho to loop apna pehla step hamesha ke liye repeat karta hai."
+
+Yeh project isi cheez ko apni aankhon se dikhata hai — pehli baar spine khaali thi, doosri baar usne khud ko update kiya, aur teesri baar (agar chalao) woh purani 4 TODOs ko bhi yaad rakhegi.
+
+Yeh wahi mechanism hai jo humare morning-triage loop (jo hum Part 5 mein bana chuke hain — SKILL.md, reviewer.md, progress.md) mein use hota hai — ab aap dekh rahe ho woh live kaam kar raha hai, chhote scale par.

@@ -1,0 +1,151 @@
+🎯 Project 4: A Fix Loop with a Real Checker
+
+Concept: Worktree + Skill + Maker-Checker | Difficulty: Medium-Hard | Time: 1-2 hrs
+
+Idea: Part 5 ke morning-triage loop ka chota version banao. Ek agent (maker) fix draft karega apne alag checkout mein, ek dusra agent (checker/reviewer) usay grade karega PASS/FAIL, aur sirf PASS par PR khulega.
+
+Step-by-Step Guide
+
+Step 1 — Ek real bug plant karo
+
+Apne throwaway repo mein ek asli bug banate hain (Project 2 ka calculator use kar sakte hain, ya naya):
+
+bash
+cat > src/discount.py << 'EOF'
+def apply_discount(price, percent):
+    # BUG: subtracts percent directly instead of percent of price
+    return price - percent
+EOF
+
+cat > tests/test_discount.py << 'EOF'
+from src.discount import apply_discount
+
+def test_discount_basic():
+    assert apply_discount(100, 20) == 80  # 20% off 100 = 80
+
+def test_discount_zero():
+    assert apply_discount(50, 0) == 50
+EOF
+
+git add -A && git commit -m "plant a real bug for project 4"
+
+Confirm fail ho rahi hai:
+
+bash
+pytest tests/test_discount.py -v
+
+Step 2 — Ek "skill" likho jismein fix ke steps hon
+
+Yeh project ki knowledge hai jo maker use karega:
+
+bash
+mkdir -p .claude/skills
+cat > .claude/skills/fix-bugs.md << 'EOF'
+# Fixing bugs in this repo
+
+When fixing a failing test:
+1. Read the failing test to understand the expected behavior.
+2. Find the minimal code change that makes it pass.
+3. Do NOT change the test file — only fix the source code.
+4. Run `pytest tests/ -v` yourself before saying you're done.
+5. Keep the fix small and focused on this one bug.
+EOF
+
+Step 3 — Reviewer (checker) ka prompt likho
+
+bash
+cat > .claude/skills/reviewer.md << 'EOF'
+# Reviewing a fix
+
+You are a strict, separate reviewer. You did NOT write this fix.
+
+1. Run `pytest tests/ -v` and check the actual output.
+2. Read the diff — does it fix ONLY the bug, without touching tests
+   or unrelated code?
+3. Reply with exactly one word first: PASS or FAIL.
+4. Then give 1-3 sentences of reasons.
+
+A fix that merely makes the test pass by editing the test itself
+is an automatic FAIL.
+EOF
+
+Step 4 — Worktree banao (isolation)
+
+bash
+git worktree add ../fix-discount-bug -b claude/fix-discount
+cd ../fix-discount-bug
+claude
+
+Step 5 — Maker se fix draft karwao (skill ke sath)
+
+Claude Code ke andar:
+
+Using the fix-bugs skill, fix the bug in src/discount.py so that
+tests/test_discount.py passes. Run pytest yourself to confirm
+before you say you're done.
+
+Fix hone ke baad, commit karo:
+
+bash
+git add -A && git commit -m "fix: apply_discount calculates percent correctly"
+
+Step 6 — Ab checker se grade karwao (naya, alag context)
+
+Yahan zaroori hai: checker naya session ho, taake usay maker ki reasoning "yaad" na ho — sirf diff aur tests dekhe:
+
+bash
+claude
+Using the reviewer skill, review the last commit's diff (git show HEAD)
+and run pytest tests/test_discount.py -v yourself. Reply PASS or FAIL
+with your reasons.
+
+Step 7 — Sirf PASS par PR/branch khulao
+
+Agar PASS mile:
+
+bash
+git push origin claude/fix-discount
+# (ya gh pr create agar GitHub CLI ho)
+🧪 Zaroori Test: Ek Jaan-boojh Kar Bura Fix Bhi Plant Karo
+
+Yeh project ka real test hai. Ek chota branch banao jahan fix galat ho:
+
+bash
+git worktree add ../fix-discount-bad -b claude/fix-discount-bad
+cd ../fix-discount-bad
+
+Manually ek "cheat" fix likho jo test ko trick kare (jaise test file hi edit kar de, ya sirf ek case ke liye hardcode kare):
+
+bash
+cat > src/discount.py << 'EOF'
+def apply_discount(price, percent):
+    if price == 100 and percent == 20:
+        return 80
+    if price == 50 and percent == 0:
+        return 50
+    return 0  # still broken for any other input!
+EOF
+git add -A && git commit -m "bad fix: hardcoded values"
+
+Ab checker se review karwao (Step 6 wala prompt). Checker ko is bure fix ko FAIL karna chahiye, reasons ke sath.
+
+✅ Done Kab Hoga?
+
+Dono cheezein sach honi chahiye:
+
+Achi fix ko PASS mile aur PR/branch bane
+Jaan-boojh kar bigadi hui fix ko FAIL mile, reasons ke sath
+
+Agar reviewer bure fix ko bhi PASS kar deta hai — aapka checker bohat soft hai, usay tighten karo (jaise "check edge cases beyond the given tests" add karo).
+
+🧠 Zaroori Baat (Concept 8, 9, 11 ka core)
+
+"Jo agent kaam banata hai, wahi khud grade nahi karta."
+
+Aapne abhi yeh apni aankhon se dekha:
+
+Worktree ne isolation di (alag checkout)
+Skill ne maker ko instructions di (bina restart kiye repeat)
+Maker-checker ne prove kiya — sirf "PASS" bolna kaafi nahi, checker ko khud test chalana padta hai
+
+Ek checker jo sab kuch approve kar de, woh checker hi nahi hai — yehi is project ka sabse bara sabaq hai.
