@@ -1,0 +1,120 @@
+🎯 Project 6: The Doorbell Loop
+
+Concept: Event-driven heartbeat + Connectors (MCP) | Difficulty: Medium | Time: 45-60 min
+
+🧠 Pehle Idea Samjho
+
+Ab tak humne jo bhi loops banaye — humne khud claude type karke start kiya. Yeh event-driven hai: koi cheez repo ke bahar hoti hai (kisi ne PR khola), aur loop khud react karta hai — bina kisi ke pooche.
+
+Doorbell ki analogy: Ghanti tab tak chup rehti hai jab tak koi darwaza na khatkhataye. Jese hi koi aata hai, ghanti khud bajti hai — aapko wahan khare rehne ki zaroorat nahi.
+
+Aap Claude Code use kar rahe ho, isliye hum Routine + GitHub PR trigger use karenge (Claude Code ka cloud automation feature).
+
+Step-by-Step Guide
+
+Step 1 — Confirm karo repo GitHub par hai
+
+Aapke terminal se lagta hai practice-loop-engeenering pehle se GitHub par push ho chuka hai. Confirm karo:
+
+bash
+git remote -v
+
+Agar GitHub URL dikhe (jaise github.com/samad.../practice-loop-engeenering), theek hai. Agar nahi, pehle push karo.
+
+Step 2 — Claude GitHub App install karo (zaroori!)
+
+Yeh alag hai /web-setup se (jo sirf clone access deta hai). App install karne ke liye:
+
+Browser mein jao: claude.ai/code/routines
+Naya Routine banate waqt, agar GitHub App connected nahi hai, wahan install karne ka link milega
+Ya seedha GitHub Settings → Installed GitHub Apps mein jakar "Claude" app dhoondo aur apne practice-loop-engeenering repo ko permission do
+
+Step 3 — Ek chota "reviewer" skill banao (agar Project 4 wali reuse nahi karni)
+
+Aap chahein to Project 4 ka .claude/skills/reviewer.md hi reuse kar sakte ho, ya naya banao specifically PR-review ke liye:
+
+bash
+mkdir -p .claude/skills
+cat > .claude/skills/pr-reviewer.md << 'EOF'
+# PR Review Skill
+
+When reviewing a pull request:
+1. Read the full diff.
+2. Look specifically for: off-by-one errors, missing null/None checks,
+   logic that contradicts the PR description.
+3. Run any existing tests if present.
+4. Leave a PR comment listing what you found, or say "Looks good"
+   if nothing stands out.
+5. Be specific: cite the exact line and what's wrong.
+EOF
+
+git add -A && git commit -m "add pr-reviewer skill"
+git push
+
+Step 4 — Routine banao (GitHub PR trigger ke sath)
+
+claude.ai/code/routines par jao → New routine → Remote (yeh zaroori hai, "Local" mat choose karna — woh Desktop task hai, cloud routine nahi):
+
+Name: PR Auto-Review
+Prompt:
+Using the pr-reviewer skill, review the pull request that just
+triggered this run. Read the diff, run any tests if they exist,
+and leave a PR comment with your findings. Be specific about
+line numbers and what's wrong.
+Repository: apna practice-loop-engeenering repo select karo (ya specific subfolder agar routine sirf ek path ke liye chahiye)
+Trigger: GitHub event choose karo → Event type: Pull Request → Action: opened (aur chaho to synchronize bhi, taake naye push par bhi dubara review ho)
+Connectors: sirf GitHub connector rakho, baaki hata do (jaisa humne Harness Engineering mein parha tha — kam tools, kam risk)
+
+Save karo.
+
+Step 5 — Ek planted bug ke sath PR kholo (test ke liye)
+
+Naye branch mein ek bug daalo:
+
+bash
+git checkout -b test-doorbell-loop
+
+Ek off-by-one ya missing null-check wala bug banao:
+
+bash
+cat > src/list_utils.py << 'EOF'
+def get_last_n_items(items, n):
+    # BUG: off-by-one, this drops the last item
+    return items[:n-1]
+EOF
+
+git add -A && git commit -m "add get_last_n_items (has a planted bug)"
+git push origin test-doorbell-loop
+
+Ab GitHub par jakar (ya gh pr create se) ek Pull Request kholo test-doorbell-loop → main.
+
+Step 6 — Wait karo aur dekho
+
+Kuch minute mein (Routine trigger fire hone ke baad), PR par ek comment aana chahiye — jo aapne kabhi request nahi kiya, kisi computer se jo aapka nahi hai. Yeh check karo Routine ke dashboard mein (claude.ai/code/routines) — run ka transcript wahan dikhega.
+
+Step 7 — Naya push karo, dekho re-trigger hota hai ya nahi
+
+bash
+git commit --allow-empty -m "trigger synchronize event"
+git push
+
+Agar aapne synchronize action bhi trigger mein add kiya tha, ek naya, alag run fire hoga — yeh proof hai ke event heartbeat kaam kar raha hai (har naya push = naya "doorbell ring").
+
+✅ Done Kab Hoga?
+PR par ek na-mangi review aayi
+Woh review ne planted bug ko pakda (agar nahi pakda, pr-reviewer.md skill ko aur specific banao aur push karke dubara try karo)
+Naye push ne dubara loop fire kiya
+⚠️ Zaroori Warnings (Yaad Rakho, Harness Engineering Se)
+Har matching event apna alag session start karta hai — do pushes ka matlab do sessions jo ek dusre ko "yaad" nahi rakhte. (Yehi Concept 12 ka spine lesson hai, GitHub ke context mein)
+GitHub events per-hour capped hain, aur cap se zyada events drop ho jate hain (queue nahi hote). Agar aap production mein yeh use karo, ek nightly scheduled Routine bhi rakho jo "reconciliation sweep" kare — missed events pakadne ke liye
+Connectors sab by default include ho jate hain — jo zaroori nahi unko hamesha hatao (yehi hum Harness Engineering ke "Constrain" verb mein parh chuke hain)
+🧠 Zaroori Baat
+
+Ab aapne charon heartbeats complete kar liye:
+
+Project 1 → in-session (/loop)
+Project 2 → conditional (/goal)
+Project 3 → scheduled (spine ke sath)
+Project 6 → event-driven (yeh wala — bilkul bina aapke!)
+
+Sirf yeh farq hai: kaun start karta hai? Aap (in-session), condition (conditional), clock (scheduled), ya duniya (event) — lekin body ka shape hamesha same (isolation + skill + maker-checker + connector).
