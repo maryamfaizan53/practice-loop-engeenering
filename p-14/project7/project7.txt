@@ -1,0 +1,87 @@
+🎯 Project 7: Break It On Purpose
+
+Concept: Observability + Cost + Trust | Difficulty: Medium | Time: 45-60 min
+
+🧠 Pehle Idea Samjho
+
+Ab tak humne loops theek banaye. Yeh project ulta hai: apna khud ka loop jaan-boojh kar tor do, phir sirf spine (progress.md + log) ko dekh kar pata lagao kya hua — bina poora run dubara dekhe.
+
+Kyun? Kyunki asal duniya mein raat ko jab aapka loop khud fail hoga (aur hoga zaroor), aap wahan baithe nahi hoge dekhne ke liye. Sirf spine hi aapko batayegi kya hua. Yeh project aapko is failure ke liye abhi, sasta, jab aap dekh rahe ho — practice karwata hai.
+
+Is project mein 2 hisse hain:
+
+Cost measure karna (kitna paisa lagta hai aapke loop ko chalane mein)
+Sabotage + Diagnose (loop ko todo, phir spine se hi pata lagao kya toota)
+Step-by-Step Guide
+
+Step 1 — Apna Project 3 (Morning Brief) loop wapis kholo
+
+Yehi wala jo humne banaya tha — progress.md padhta tha, TODOs collect karta tha, update karta tha.
+
+Step 2 — Ek Beat Measure Karo (Cost Math)
+
+Ek run chalao (jaisa Project 3 mein kiya tha), aur Claude Code interface mein dekho kitne tokens use hue (yeh usually session ke end mein ya /cost jaisi command se dikhta hai).
+
+Phir chota sa hisaab lagao:
+
+Ek run ka cost = X tokens (roughly $Y)
+Agar yeh loop din mein 1 baar chale = $Y × 30 din = mahine ka cost
+Agar har ghante chale = $Y × 24 × 30 = bohat zyada!
+
+Example: Agar ek beat ~$0.05 ka hai aur roz chalta hai → ~$1.50/mahina. Agar har ghante chale → ~$36/mahina — same kaam, 24 guna zyada!
+
+Yeh bilkul wahi cheez hai jo Loop Engineering Part 6 mein parhi thi: "Loop ko kam frequency par chalao — har 5 min ki jagah har ghante, cost mein bohat farq aata hai."
+
+Step 3 — Loop Ko Sabotage Karo (2 Tareeqay)
+
+Tareeqa A — Ek file jo exist nahi karti:
+
+Apne loop ke prompt mein ya skill mein, jaan-boojh kar ek galat file ka naam likho:
+
+Read the file called nonexistent-notes-xyz.md first, then find TODOs
+as usual and update progress.md.
+
+Tareeqa B — Ek success condition jo kabhi meet nahi ho sakti (limit ke sath!):
+
+/goal Keep searching for TODOs until you find exactly 999 of them
+in this repo. Try up to 3 times maximum, then stop and report you
+could not meet the goal.
+
+⚠️ Zaroori: Hamesha ek limit (max tries) rakho — warna yeh sabotage hamesha ke liye chalta rahega!
+
+Step 4 — Ise Fail Hone Do
+
+Loop chalao (schedule par ya manually). Yeh fail hoga — file nahi milegi, ya condition kabhi meet nahi hogi.
+
+Step 5 — Ab Sirf Spine Se Diagnose Karo (Asal Test!)
+
+Poora run dubara mat padho. Sirf yeh 2 cheezein dekho:
+
+bash
+cat progress.md
+
+Aur agar aapne log rakha hai (jaisa hum Loop Engineering mein parh chuke — "log/notification, silent failure na ho"):
+
+bash
+cat loop.log   # ya jahan bhi aap log rakhte hain
+
+Sawal jo khud se poocho:
+
+Kya progress.md mein saaf likha hai ke kya fail hua aur kab?
+Kya loop ne ek "needs a human" note chhoda, ya chup chaap fail ho gaya?
+Kya aap sirf inhi 2 files se bata sakte ho, bina Claude Code ka poora transcript khole, ke kya galat hua?
+✅ Done Kab Hoga? (3 Cheezein)
+Spine akele se aap bata sakte ho kya fail hua aur kab
+Loop ne ek saaf "needs a human" note chhoda — chup chaap fail nahi hua
+Aapko apne loop ka mahine ka cost pata hai, current frequency par
+
+Agar chup chaap fail hua (koi note nahi chhoda), yeh sabse pehle fix karo — apni skill/prompt mein ek line add karo:
+
+If anything fails or you cannot complete the task, write a clear
+"NEEDS HUMAN: [reason]" line to progress.md before stopping. Never
+fail silently.
+🧠 Zaroori Baat
+
+Aap raat ki failure abhi rehearse kar rahe ho — jab woh sasti hai aur aap dekh rahe ho.
+
+Yeh Loop Engineering Part 6 (Human Control) aur Concept 14 (Observability) ka core hai: agar aap dekh nahi sakte, to woh hai hi nahi. Ek loop jo chup chaap fail hota hai utna hi khatarnak hai jitna ek loop jo chup chaap galat kaam kar deta hai — dono cases mein aapko pata hi nahi chalta jab tak nuksaan na ho jaye.
